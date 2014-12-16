@@ -1,24 +1,52 @@
 class tse_websphere (
   $installables_root = '/opt/wlp_files',
   $websphere_version = '8.5.5.4',
+  $demo_server = $::servername,
 ) {
   include java
- 
+  include profile::firewall
+
+  File {
+    before => Class['::wlp'],
+  }
+
+  File_remote {
+    before  => Class['::wlp'],
+    require => File["${installables_root}/installables"],
+  }
+
   file {'/opt/wlp':
     ensure => directory,
-    before => Class['::wlp'],
   }
 
   file { $installables_root:
     ensure => directory,
-    before => Class['::wlp'],
+  }
+  
+  file { "${installables_root}/installables":
+    ensure => directory,
   }
 
   remote_file { '/opt/wlp/jenkins.war':
     ensure => latest,
-    source => 'http://master.inf.puppetlabs.demo/war/latest/jenkins.war',
-    before => Class['::wlp'],
+    source => "http://${demo_server}/war/latest/jenkins.war",
   }
+
+  remote_file { "${installables_root}/installables/wlp-base-trial-runtime-${websphere_version}.jar":
+    ensure => latest,
+    source => "http://${demo_server}/wlp/wlp-base-trial-runtime-${websphere_version}.jar",
+  }
+
+  remote_file { "${installables_root}/installables/wlp-trial-extended-${websphere_version}.jar":
+    ensure => latest,
+    source => "http://${demo_server}/wlp/wlp-trial-extended-${websphere_version}.jar",
+  }
+
+  remote_file { "${installables_root}/installables/wlp-trial-extras-${websphere_version}.jar":
+    ensure => latest,
+    source => "http://${demo_server}/wlp/wlp-trial-extras-${websphere_version}.jar",
+  }
+
 
   firewall { '100 allow connections to websphere':
     proto   => 'tcp',
