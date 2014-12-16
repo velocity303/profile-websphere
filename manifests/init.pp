@@ -14,6 +14,7 @@ class tse_websphere (
     before  => Class['::wlp'],
     require => File["${installables_root}/installables"],
   }
+  notify { "server: ${demo_server}": }
 
   file {'/opt/wlp':
     ensure => directory,
@@ -25,6 +26,11 @@ class tse_websphere (
   
   file { "${installables_root}/installables":
     ensure => directory,
+  }
+
+  file { "/opt/wlp/jenkins.xml":
+    ensure => present,
+    source => 'puppet:///modules/tse_websphere/jenkins.xml',
   }
 
   remote_file { '/opt/wlp/jenkins.war':
